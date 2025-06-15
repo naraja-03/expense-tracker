@@ -28,7 +28,7 @@ export default function HomePage() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className="min-h-screen bg-gray-100 pb-20 p-4">
       <div className="flex flex-col items-center py-6 relative">
         <div className="flex items-center justify-center gap-4 min-w-[320px]">
           <button
