@@ -30,12 +30,20 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
       <div className="flex flex-col items-center py-6 relative">
-        <div className="flex items-center justify-center gap-4">
-          <button aria-label="Previous month" onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-gray-200 transition">
+        <div className="flex items-center justify-center gap-4 min-w-[320px]">
+          <button
+            aria-label="Previous month"
+            onClick={() => changeMonth(-1)}
+            className="p-2 rounded-full hover:bg-gray-200 transition w-10 flex-shrink-0 flex items-center justify-center"
+          >
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
-          <span className="text-2xl">{displayedMonth}</span>
-          <button aria-label="Next month" onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-gray-200 transition">
+          <span className="flex-1 text-2xl text-center min-w-[140px]">{displayedMonth}</span>
+          <button
+            aria-label="Next month"
+            onClick={() => changeMonth(1)}
+            className="p-2 rounded-full hover:bg-gray-200 transition w-10 flex-shrink-0 flex items-center justify-center"
+          >
             <ChevronRightIcon className="h-6 w-6" />
           </button>
         </div>

@@ -7,8 +7,8 @@ import { useState, useEffect, useRef } from "react";
 import type { ExpenseItem } from "@/types/expense";
 
 function getBottomRight() {
-  const x = window.innerWidth - 80;
-  const y = window.innerHeight - 80;
+  const x = window.innerWidth - 120;
+  const y = window.innerHeight - 160;
   return { x, y };
 }
 

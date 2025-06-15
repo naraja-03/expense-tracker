@@ -1,86 +1,78 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
-import path from "path";
-import type { DayExpense } from "@/types/expense";
+import { MongoClient } from "mongodb";
 
-interface ExpensesFileData {
-  targetByMonth: { [month: string]: number };
-  days: DayExpense[];
-}
+const uri = "mongodb+srv://threedot:Ajar003@threedot.zjgkhdo.mongodb.net/";
+const dbName = "budget"; // you can use any db name
+let cachedClient: MongoClient | null = null;
 
-const DATA_PATH = path.join(process.cwd(), "data", "expenses.json");
-
-async function readData(): Promise<ExpensesFileData> {
-  try {
-    const file = await fs.readFile(DATA_PATH, "utf-8");
-    const json = JSON.parse(file);
-    return {
-      targetByMonth: json.targetByMonth || {},
-      days: json.days || [],
-    };
-  } catch (e) {
-    console.log(e);
-    return { targetByMonth: {}, days: [] };
+async function connectToDatabase() {
+  if (cachedClient) {
+    return cachedClient;
   }
-}
-
-async function writeData(data: ExpensesFileData): Promise<void> {
-  const json = JSON.stringify(data, null, 2);
-  await fs.writeFile(DATA_PATH, json, "utf-8");
+  const client = new MongoClient(uri);
+  await client.connect();
+  cachedClient = client;
+  return client;
 }
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const client = await connectToDatabase();
+  const db = client.db(dbName);
+
   if (req.method === "GET") {
     const { month } = req.query;
-    const data = await readData();
 
-    let filtered = data.days;
-    if (month && typeof month === "string") {
-      filtered = data.days.filter((day) => day.date.startsWith(month));
-    }
-    const target = month && typeof month === "string"
-      ? data.targetByMonth[month] ?? 0
-      : 0;
-    res.status(200).json({ expenses: filtered, target });
+    // Get expenses for month
+    const days = await db
+      .collection("days")
+      .find(
+        month && typeof month === "string"
+          ? { date: { $regex: `^${month}` } }
+          : {}
+      )
+      .toArray();
+
+    // Get target for month
+    const targetDoc = await db.collection("targets").findOne({ month });
+    const target = targetDoc?.target ?? 0;
+    res.status(200).json({ expenses: days, target });
     return;
   }
 
   if (req.method === "POST") {
     const { type, date, index, newItem, target, month } = req.body;
-    const data = await readData();
 
     if (type === "add") {
-      const idx = data.days.findIndex((d) => d.date === date);
-      if (idx !== -1) {
-        data.days[idx] = {
-          ...data.days[idx],
-          items: [...data.days[idx].items, newItem],
-        };
-      } else {
-        data.days.push({ date, items: [newItem] });
-      }
+      // Upsert day
+      await db
+        .collection("days")
+        .updateOne({ date }, { $push: { items: newItem } }, { upsert: true });
     } else if (type === "edit") {
-      const idx = data.days.findIndex((d) => d.date === date);
-      if (idx !== -1 && Number.isFinite(index)) {
-        data.days[idx] = {
-          ...data.days[idx],
-          items: data.days[idx].items.map((item, i) =>
-            i === index ? newItem : item
-          ),
-        };
+      // Edit an existing item in a day's items array
+      if (typeof index === "number") {
+        const day = await db.collection("days").findOne({ date });
+        if (!day || !day.items || !day.items[index]) {
+          res.status(404).json({ error: "Item not found" });
+          return;
+        }
+        day.items[index] = newItem;
+        await db
+          .collection("days")
+          .updateOne({ date }, { $set: { items: day.items } });
       }
     } else if (type === "target") {
-      // month is required for setting target
-      if (month && typeof target === "number") {
-        data.targetByMonth[month] = target;
-      }
+      // Upsert target for month
+      await db
+        .collection("targets")
+        .updateOne({ month }, { $set: { target } }, { upsert: true });
     } else if (type === "update") {
-      data.days = newItem;
+      // Overwrite all days (admin use)
+      await db.collection("days").deleteMany({});
+      await db.collection("days").insertMany(newItem);
     }
-    await writeData(data);
     res.status(200).json({ ok: true });
     return;
   }
