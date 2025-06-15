@@ -1,22 +1,16 @@
 {
+  "targetByMonth": {
+    "2025-06": 5000,
+    "2025-07": 1500
+  },
   "days": [
     {
       "date": "2025-06-14",
       "items": [
         {
           "category": "Food",
-          "amount": 120,
-          "note": "Lunch"
-        },
-        {
-          "category": "Transport",
-          "amount": 50,
-          "note": ""
-        },
-        {
-          "category": "scqs",
-          "amount": 123132,
-          "note": "dcadscsa"
+          "amount": 250,
+          "note": " "
         }
       ]
     },
@@ -24,19 +18,24 @@
       "date": "2025-06-15",
       "items": [
         {
-          "category": "Shopping",
-          "amount": 500,
-          "note": "Clothes"
-        }
-      ]
-    },
-    {
-      "date": "2025-06-01",
-      "items": [
+          "category": "Food",
+          "amount": 150,
+          "note": " "
+        },
+        {
+          "category": "Grocery",
+          "amount": 260,
+          "note": ""
+        },
         {
           "category": "test",
-          "amount": 2867,
-          "note": "sdqwdqwdwqd"
+          "amount": 1,
+          "note": ""
+        },
+        {
+          "category": "test",
+          "amount": 1223,
+          "note": ""
         }
       ]
     }

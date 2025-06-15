@@ -1,11 +1,9 @@
-"use client";
 import { useDroppable } from "@dnd-kit/core";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { useState, useRef } from "react";
 import type { DayExpense, ExpenseItem } from "@/types/expense";
-import axios from "axios";
 import AddExpenseModal from "./AddExpenseModal";
-import { useFabHover } from "@/context/FabHoverContext";
+import { useFabHover } from "@/context/AppContext";
 
 function useDebouncedCallback(callback: (...args: any[]) => void, delay: number) {
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -37,11 +35,15 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
   // Debounced save to API (edit)
   const debouncedSave = useDebouncedCallback(async (i: number, field: keyof ExpenseItem, value: string) => {
     const newItem = { ...day.items[i], [field]: field === "amount" ? Number(value) : value };
-    await axios.post("/api/expenses", {
-      type: "edit",
-      date: day.date,
-      index: i,
-      newItem,
+    await fetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "edit",
+        date: day.date,
+        index: i,
+        newItem,
+      }),
     });
     refetch?.();
   }, 666);
@@ -58,20 +60,24 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
 
   const handleBlur = async (i: number, field: keyof ExpenseItem, value: string) => {
     setEdit(null);
-    await axios.post("/api/expenses", {
-      type: "edit",
-      date: day.date,
-      index: i,
-      newItem: { ...day.items[i], [field]: field === "amount" ? Number(value) : value },
+    await fetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "edit",
+        date: day.date,
+        index: i,
+        newItem: { ...day.items[i], [field]: field === "amount" ? Number(value) : value },
+      }),
     });
     refetch?.();
   };
 
   const handleAddExpense = async (item: ExpenseItem, date: string) => {
-    await axios.post("/api/expenses", {
-      type: "add",
-      date,
-      newItem: item,
+    await fetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "add", date, newItem: item }),
     });
     setModalOpen(false);
     refetch?.();

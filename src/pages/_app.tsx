@@ -1,12 +1,15 @@
 import type { AppProps } from 'next/app';
 import '../styles/globals.css';
-import { FabHoverProvider } from '@/context/FabHoverContext';
+import { AppProvider } from '@/context/AppContext';
+import { ExpenseDataProvider } from '@/context/ExpenseDataContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <FabHoverProvider>
-      <Component {...pageProps} />
-    </FabHoverProvider>
+    <AppProvider>
+      <ExpenseDataProvider>
+        <Component {...pageProps} />
+      </ExpenseDataProvider>
+    </AppProvider>
   );
 }
 

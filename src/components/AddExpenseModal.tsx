@@ -90,7 +90,7 @@ export default function AddExpenseModal({ open, date, onClose, onSubmit }: Props
               type="text"
               className="px-3 py-2 rounded-lg bg-gray-100 focus:bg-gray-100 outline-none border border-transparent focus:border-transparent transition-all text-base"
               value={note}
-              onChange={e => setNote(e.target.value)}
+              onChange={e => setNote(e.target.value || "-")}
               placeholder="Optional"
               style={{ height: 40 }}
             />

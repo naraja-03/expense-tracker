@@ -13,10 +13,3 @@ export interface ExpensesData {
   target: number;
   expenses: DayExpense[];
 }
-
-export type EditExpenseRequest = {
-  type: "edit";
-  date: string;
-  index: number;
-  newItem: ExpenseItem;
-};

@@ -1,12 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useRef } from "react";
 import FloatingAddButton from "./FloatingAddButton";
 import AddExpenseModal from "./AddExpenseModal";
 import ExpenseDayCard from "./ExpenseDayCard";
-import type { DayExpense, ExpenseItem } from "@/types/expense";
-import axios from "axios";
-import { useFabHover } from "@/context/FabHoverContext";
-
+import { useFabHover } from "@/context/AppContext";
+import { useExpenses } from "@/context/ExpenseDataContext";
+import { useState, useEffect, useRef } from "react";
+import type { ExpenseItem } from "@/types/expense";
 
 function getBottomRight() {
   const x = window.innerWidth - 80;
@@ -14,32 +12,18 @@ function getBottomRight() {
   return { x, y };
 }
 
-export default function ExpenseDaysPage() {
-  const [days, setDays] = useState<DayExpense[]>([]);
+export default function ExpenseDaysList() {
+  const { days, refetch } = useExpenses();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState<string>("");
   const [btnPosition, setBtnPosition] = useState(getBottomRight());
   const [resettingBtn, setResettingBtn] = useState(false);
 
   const btnPositionRef = useRef(btnPosition);
-  useEffect(() => {
-    btnPositionRef.current = btnPosition;
-  }, [btnPosition]);
+  useEffect(() => { btnPositionRef.current = btnPosition; }, [btnPosition]);
 
   const cardRefs = useRef<{ [date: string]: HTMLDivElement | null }>({});
   const { setHoveredDate } = useFabHover();
-
-  // Fetch all days from API (json-server or Next.js API)
-  const fetchDays = async () => {
-    const res = await axios.get<DayExpense[]>("/api/expenses");
-    setDays(
-      res.data.sort((a, b) => b.date.localeCompare(a.date))
-    );
-  };
-
-  useEffect(() => {
-    fetchDays();
-  }, []);
 
   useEffect(() => {
     const setToBottomRight = () => setBtnPosition(getBottomRight());
@@ -112,17 +96,17 @@ export default function ExpenseDaysPage() {
     setModalDate("");
   };
 
-  // Save new expense to API
+  // Save new expense to API and refetch
   const handleModalSubmit = async (item: ExpenseItem, date: string) => {
     setModalOpen(false);
     setModalDate("");
     // POST to /api/expenses for new item
-    await axios.post("/api/expenses", {
-      type: "add",
-      date,
-      newItem: item,
+    await fetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "add", date, newItem: item }),
     });
-    fetchDays();
+    await refetch();
   };
 
   return (
@@ -131,25 +115,36 @@ export default function ExpenseDaysPage() {
         position={btnPosition}
         setPosition={setBtnPosition}
         resetting={resettingBtn}
-        onDragStart={() => {}}
+        onDragStart={() => { }}
         onDragEnd={handleFloatingButtonAction}
         onClick={handleFloatingButtonAction}
       />
 
       <div className="flex flex-col gap-4 mt-8">
-        {days.map(day => (
-          <div
-            key={day.date}
-            ref={el => { cardRefs.current[day.date] = el; }}
-            id={day.date}
-          >
-            <ExpenseDayCard
-              day={day}
-              refetch={fetchDays}
-              onDropAdd={() => {}}
-            />
+        {(!days || days.length === 0) ? (
+          <div className="text-center text-gray-400 py-8">
+            <div className="text-lg sm:text-xl md:text-2xl font-semibold mb-2">
+              No expense records found for this period.
+            </div>
+            <div className="text-base sm:text-lg md:text-xl">
+              Start tracking your spending to gain valuable insights and better manage your finances.
+            </div>
           </div>
-        ))}
+        ) : (
+          days.map(day => (
+            <div
+              key={day.date}
+              ref={el => { cardRefs.current[day.date] = el; }}
+              id={day.date}
+            >
+              <ExpenseDayCard
+                day={day}
+                refetch={refetch}
+                onDropAdd={() => { }}
+              />
+            </div>
+          ))
+        )}
       </div>
 
       <AddExpenseModal

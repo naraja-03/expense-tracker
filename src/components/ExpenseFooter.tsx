@@ -19,7 +19,11 @@ export default function ExpenseFooter({ total, target, refetchTarget }: Props) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(target);
   const debouncedSave = useDebouncedCallback(async (value: number) => {
-    await axios.post("/api/expenses", { type: "target", target: value });
+    await axios.post("/api/expenses", {
+      type: "target",
+      month: "2025-06",
+      target: value
+    });
     refetchTarget();
   }, 666);
 
@@ -78,7 +82,7 @@ export default function ExpenseFooter({ total, target, refetchTarget }: Props) {
           )}
         </div>
         <div>
-          P/L: <span className={`font-mono ${plColor}`}>₹{pl}</span>
+          P/L: <span className={`font-mono ${plColor}`}>₹{pl || '0'}</span>
         </div>
       </div>
     </div>
