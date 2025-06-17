@@ -43,7 +43,10 @@ export default function AddExpenseModal({ open, date, onClose, onSubmit }: Props
       <div
         className="bg-white rounded-xl shadow-lg w-full max-w-lg p-8"
         style={{
-          minWidth: 400,
+          minWidth: 0,
+          margin: "32px",
+          maxHeight: "calc(100vh - 64px)",
+          overflowY: "auto",
           boxShadow: "0 8px 32px 0 rgba(80,120,255,0.13)",
         }}
       >
