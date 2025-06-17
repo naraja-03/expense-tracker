@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import axios from "axios";
+import { useMonth } from "@/context/AppContext";
 
 interface Props {
   total: number;
@@ -18,10 +19,12 @@ function useDebouncedCallback(callback: (...args: any[]) => void, delay: number)
 export default function ExpenseFooter({ total, target, refetchTarget }: Props) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(target);
+  const { month } = useMonth();
+
   const debouncedSave = useDebouncedCallback(async (value: number) => {
     await axios.post("/api/expenses", {
       type: "target",
-      month: "2025-06",
+      month: month,
       target: value
     });
     refetchTarget();

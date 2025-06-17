@@ -24,11 +24,15 @@ export const ExpenseDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setLoading(true);
         try {
             const { data } = await axios.get<ExpensesData>(`/api/expenses?month=${monthOverride || month}`);
-            setDays(data.expenses);
+
+            const sortedExpenses = data.expenses.sort((a, b) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            setDays(sortedExpenses);
             setTarget(data.target ?? 0);
         } catch (err) {
             console.log(err);
-
             setDays([]);
             setTarget(0);
         }

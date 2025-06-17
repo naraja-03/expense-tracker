@@ -55,11 +55,19 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
 
   const handleChange = (i: number, field: keyof ExpenseItem, value: string) => {
     setEditValue(value);
-    debouncedSave(i, field, value);
+    const originalValue = String(day.items[i][field] ?? "");
+
+    if (originalValue !== value) {
+      debouncedSave(i, field, value);
+    }
   };
 
   const handleBlur = async (i: number, field: keyof ExpenseItem, value: string) => {
     setEdit(null);
+    const originalValue = String(day.items[i][field] ?? "");
+
+    if (originalValue === value) return; // No change, skip API call
+
     await fetch("/api/expenses", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -104,12 +112,6 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
           <span className="font-bold text-lg">
             Day - {Number(day.date.split("-")[2])}
           </span>
-          <span className="ml-2 text-gray-500 text-sm">
-            ({new Date(day.date).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            })})
-          </span>
           <span className="flex-1" />
           {open ? (
             <ChevronUpIcon className="h-5 w-5" />
@@ -117,7 +119,7 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
             <ChevronDownIcon className="h-5 w-5" />
           )}
         </button>
-        <div className={`overflow-hidden transition-all duration-700 ${open ? "max-h-96" : "max-h-0"}`}>
+        <div className={`overflow-hidden transition-all duration-500 ${open ? "max-h-96" : "max-h-0"}`}>
           <ul className=" mt-2">
             {day.items.map((item, i) => (
               <li key={i} className="py-2 flex flex-col items-start gap-0">
@@ -194,12 +196,13 @@ export default function ExpenseDayCard({ day, refetch }: Props) {
         {isOver && (
           <div className="absolute inset-0 bg-blue-200/40 pointer-events-none rounded-xl transition" />
         )}
-      </div>
+      </div >
       {/* Modal for add expense (not used by FAB, but kept for possible card-level add) */}
-      <AddExpenseModal
+      < AddExpenseModal
         open={modalOpen}
         date={day.date}
-        onClose={() => setModalOpen(false)}
+        onClose={() => setModalOpen(false)
+        }
         onSubmit={handleAddExpense}
       />
     </>
